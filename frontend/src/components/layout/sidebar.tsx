@@ -16,15 +16,10 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { mockUsers } from "@/lib/api/mock-data";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/theme-toggle";
 
-interface SidebarProps {
-  role?: "student" | "mentor" | "admin";
-}
-
-const studentNavItems = [
+const navItems = [
   { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { title: "Courses", href: "/courses", icon: BookOpen },
   { title: "Assignments", href: "/assignments", icon: FileText },
@@ -33,12 +28,22 @@ const studentNavItems = [
   { title: "Certificates", href: "/certificates", icon: GraduationCap },
 ];
 
-const userName = "Sony";
-const currentUser = mockUsers[0];
+interface SidebarProps {
+  userName?: string;
+  userEmail?: string;
+  userAvatar?: string;
+  role?: "student" | "mentor" | "admin";
+}
 
-export function Sidebar({ role = "student" }: SidebarProps) {
+export function Sidebar({ userName, userEmail, userAvatar, role = "student" }: SidebarProps) {
   const pathname = usePathname();
-  const navItems = role === "mentor" ? studentNavItems : studentNavItems;
+
+  const displayName = userName || "Learner";
+  const initials = displayName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2);
 
   return (
     <aside className="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col border-r bg-card">
@@ -61,14 +66,14 @@ export function Sidebar({ role = "student" }: SidebarProps) {
       <div className="px-3 py-4">
         <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-3">
           <Avatar className="h-9 w-9">
-            <AvatarImage src={currentUser.avatar_url} />
-            <AvatarFallback className="text-xs font-medium">
-              {userName.slice(0, 2).toUpperCase()}
-            </AvatarFallback>
+            <AvatarImage src={userAvatar} />
+            <AvatarFallback className="text-xs font-medium">{initials}</AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">{userName}</p>
-            <p className="text-xs text-muted-foreground">Learning Workspace</p>
+            <p className="truncate text-sm font-medium">{displayName}&apos;s Workspace</p>
+            <p className="text-xs text-muted-foreground truncate">
+              {role === "mentor" ? "Mentor" : "Learning Journey"}
+            </p>
           </div>
         </div>
       </div>

@@ -85,6 +85,7 @@ export interface LiveSession {
   duration_minutes: number;
   jitsi_room_id: string;
   status: "scheduled" | "live" | "completed" | "cancelled";
+  max_attendees?: number;
   created_at: string;
 }
 

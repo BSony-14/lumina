@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { CommandPalette } from "@/components/layout/command-palette";
+import { AuthProvider } from "@/lib/auth-context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,8 +17,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Lumina LMS - AI-Powered Learning Platform",
-  description: "Master new skills with AI-powered coaching, live mentorship, and hands-on projects. Personalized learning paths designed for your growth.",
-  keywords: ["learning", "courses", "AI", "education", "mentorship", "LMS"],
+  description: "Master new skills with AI-powered coaching, live mentorship, and hands-on projects. Personalized learning paths for students, professionals, and institutions.",
+  keywords: ["learning", "courses", "AI", "education", "mentorship", "LMS", "online learning", "professional development"],
   icons: {
     icon: "/favicon.svg",
   },
@@ -48,8 +49,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <CommandPalette />
-          {children}
+          <AuthProvider>
+            <CommandPalette />
+            {children}
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
