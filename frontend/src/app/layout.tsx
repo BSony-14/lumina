@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -18,6 +18,16 @@ export const metadata: Metadata = {
   title: "Lumina LMS - AI-Powered Learning Platform",
   description: "Master new skills with AI-powered coaching, live mentorship, and hands-on projects. Personalized learning paths designed for your growth.",
   keywords: ["learning", "courses", "AI", "education", "mentorship", "LMS"],
+  icons: {
+    icon: "/favicon.svg",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
 };
 
 export default function RootLayout({

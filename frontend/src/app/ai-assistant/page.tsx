@@ -5,25 +5,34 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Bot, Send, User, Loader as Loader2, Sparkles } from "lucide-react";
+import { Bot, Send, User, Loader as Loader2, Sparkles, BookOpen, FileText, Lightbulb, RefreshCw } from "lucide-react";
 import { mockUsers } from "@/lib/api/mock-data";
 import type { ChatMessage } from "@/lib/api/types";
 
+const userName = "Sony";
 const currentUser = mockUsers[0];
 
 const suggestedQuestions = [
-  "Explain React hooks in simple terms",
-  "Generate a quiz on JavaScript async/await",
-  "Create revision notes for Data Structures",
-  "What are practical uses of machine learning?",
+  { icon: BookOpen, text: "Explain React hooks in simple terms", category: "Course Help" },
+  { icon: FileText, text: "Generate practice quiz on async/await", category: "Practice" },
+  { icon: Lightbulb, text: "Create revision notes for Data Structures", category: "Review" },
+  { icon: Sparkles, text: "Suggest next steps for my ML journey", category: "Path" },
 ];
+
+const contextPrompt = `You are ${userName}'s AI learning coach on Lumina. Context: They're learning web development (React, Node.js) and machine learning. Current progress: React hooks module (68%), ML fundamentals (45%).`;
 
 export default function AIAssistantPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "1",
       role: "assistant",
-      content: "Hello! I'm Lumina, your AI learning coach. I can help you understand concepts, generate quizzes, create revision notes, and provide personalized learning guidance. What would you like to learn about today?",
+      content: `Hey ${userName}! I noticed you're making great progress on React hooks (68% complete). Ready to dive deeper into \`useEffect\` or would you like to tackle the async/await concepts from your ML course?
+
+I can also:
+- **Generate practice quizzes** based on what you've learned
+- **Create revision notes** for quick review
+- **Explain complex concepts** in simpler terms
+- **Suggest learning paths** tailored to your goals`,
       timestamp: new Date().toISOString(),
     },
   ]);
@@ -50,27 +59,27 @@ export default function AIAssistantPage() {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    const currentInput = inputValue;
     setInputValue("");
     setIsTyping(true);
 
-    // Simulate AI response
     setTimeout(() => {
       const aiResponses: Record<string, string> = {
         "react hooks":
-          "**React Hooks Explained Simply**\n\nHooks are special functions that let you \"hook into\" React features from function components.\n\n**useState** - Adds state to your component:\n```jsx\nconst [count, setCount] = useState(0);\n```\n\n**useEffect** - Runs side effects (API calls, subscriptions):\n```jsx\nuseEffect(() => {\n  // runs on mount\n}, []);\n```\n\n**Key Points:**\n- Only call hooks at the top level\n- Only call hooks from React functions\n- Hooks let you reuse stateful logic without changing your component hierarchy",
+          `Great question, ${userName}! Let me break down React hooks for you:\n\n**useState** - Manages component state:\n\`\`\`jsx\nconst [count, setCount] = useState(0);\nconst [user, setUser] = useState(null);\n\`\`\`\n\n**useEffect** - Side effects (API calls, subscriptions):\n\`\`\`jsx\nuseEffect(() => {\n  fetchData();\n}, []); // Empty deps = runs once on mount\n\`\`\`\n\n**Key Rules:**\n1. Only call hooks at the top level\n2. Only call hooks from React functions\n3. Dependencies array controls when effects run\n\nWant me to generate a practice quiz on hooks?`,
         quiz:
-          "**Quiz: JavaScript Async/Await**\n\n**Q1:** What does `async` do to a function?\nA) Makes it run faster\nB) Returns a Promise\nC) Blocks execution\nD) Nothing\n\n**Answer:** B) Returns a Promise\n\n**Q2:** How do you handle errors with async/await?\nA) `error()` block\nB) `catch()` block\nC) `try/catch` block\nD) `handle()` block\n\n**Answer:** C) `try/catch` block\n\n**Q3:** What happens if you `await` a non-Promise value?\nA) Error\nB) Returns undefined\nC) Wraps it in a resolved Promise\nD) Throws exception\n\n**Answer:** C) Wraps it in a resolved Promise",
+          `**Practice Quiz: JavaScript Async/Await**\n\nLet's test your knowledge:\n\n**Q1:** What does \`async\` do to a function?\n\nA) Makes it run faster  \nB) Returns a Promise automatically  \nC) Blocks the thread  \n\n> Think about it... Async functions always return Promises!\n\n**Q2:** How do you handle errors in async/await?\n\nA) \`error()\` block  \nB) \`try/catch\` block  \nC) \`handle()\` block  \n\n<details>\n<summary>Reveal Answer</summary>\n\n**Q1:** B - Async functions automatically wrap return values in Promises  \n**Q2:** B - Use try/catch around await statements\n\n</details>\n\nWould you like more questions or explanations?`,
         revision:
-          "**Revision Notes: Data Structures**\n\n### Arrays\n- **Time Complexity:** Access O(1), Insert/Delete O(n)\n- Contiguous memory allocation\n- Fixed or dynamic size\n\n### Linked Lists\n- **Time Complexity:** Access O(n), Insert/Delete O(1) at known position\n- Non-contiguous memory\n- Each node has data + pointer\n\n### Stacks (LIFO)\n- Operations: push, pop, peek\n- Applications: undo operations, expression evaluation\n\n### Queues (FIFO)\n- Operations: enqueue, dequeue\n- Applications: task scheduling, BFS\n\n### Hash Tables\n- **Average Time:** O(1) for all operations\n- Collision handling: chaining, open addressing\n\n### Trees\n- Binary Search Tree: left < root < right\n- Balanced trees (AVL, Red-Black): O(log n) operations",
-        practical:
-          "**Practical Applications of Machine Learning**\n\n**1. Mini-Project: Spam Email Classifier**\n- Build a text classifier using Naive Bayes\n- Skills: NLP preprocessing, feature extraction\n- Time: 4-6 hours\n\n**2. Image Classification App**\n- Train a CNN on a custom dataset\n- Skills: deep learning, transfer learning\n- Time: 8-12 hours\n\n**3. Recommendation System**\n- Build a collaborative filtering model\n- Skills: matrix factorization, evaluation metrics\n- Time: 6-8 hours\n\n**4. Sentiment Analysis Tool**\n- Analyze Twitter/X sentiment in real-time\n- Skills: API integration, NLP pipelines\n- Time: 5-7 hours",
+          `**Quick Revision: Data Structures** ${userName}\n\n### Arrays\n- Access: O(1) | Insert/Delete: O(n)\n- Contiguous memory\n- Best for: Index-based access\n\n### Linked Lists\n- Access: O(n) | Insert/Delete: O(1) at known position\n- Non-contiguous memory\n- Best for: Frequent insertions/deletions\n\n### Stacks (LIFO)\n- Operations: push, pop, peek\n- Use cases: Undo systems, parsing\n\n### Queues (FIFO)\n- Operations: enqueue, dequeue\n- Use cases: Task scheduling, BFS\n\n### Quick Tip 💡\nFor your ML course, focus on **Hash Tables** - they're crucial for efficient feature lookup!\n\nWant me to generate practice problems?`,
+        suggest:
+          `Based on your progress, ${userName}, here's what I recommend:\n\n**Immediate Next Steps:**\n1. Complete the React hooks module (you're at 68% - almost there!)\n2. Practice \`useEffect\` with real API calls\n3. Start the ML assignment on neural networks\n\n**This Week's Focus:**\n- Build a small React app using useState + useEffect\n- Review gradient descent before the ML Q&A session\n\n**Long-term Path:**\n- Your ML journey is 45% complete - consider the AWS cloud course next for deployment skills\n\nShall I create a personalized study schedule for you?`,
       };
 
       let responseText =
-        "I'd be happy to help you with that! Could you provide more details about what you're working on? For example:\n\n- What course or topic are you studying?\n- Are you looking for an explanation, quiz, or practice problems?\n- What's your current level of understanding?";
+        `I'd be happy to help, ${userName}! I can:\n\n- **Explain concepts** from your courses\n- **Generate practice material** (quizzes, exercises)\n- **Create study aids** (revision notes, summaries)\n- **Plan your learning path** based on your goals\n\nWhat would you like to work on?`;
 
       for (const [key, value] of Object.entries(aiResponses)) {
-        if (inputValue.toLowerCase().includes(key)) {
+        if (currentInput.toLowerCase().includes(key)) {
           responseText = value;
           break;
         }
@@ -85,29 +94,56 @@ export default function AIAssistantPage() {
 
       setMessages((prev) => [...prev, aiMessage]);
       setIsTyping(false);
-    }, 1500);
+    }, 1200);
+  };
+
+  const handleQuickAction = (text: string) => {
+    setInputValue(text);
+    setTimeout(() => handleSend(), 100);
   };
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col">
+    <div className="flex h-[calc(100vh-4rem)] flex-col bg-muted/20">
       {/* Header */}
-      <div className="border-b bg-card px-6 py-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary">
-            <Bot className="h-6 w-6 text-primary-foreground" />
+      <div className="border-b bg-background/95 px-6 py-4 backdrop-blur">
+        <div className="mx-auto flex max-w-4xl items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">
+              <Bot className="h-5 w-5 text-primary-foreground" />
+            </div>
+            <div>
+              <h1 className="text-lg font-semibold">AI Learning Coach</h1>
+              <p className="text-xs text-muted-foreground">
+                Personalized help for your learning journey
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-lg font-semibold">Lumina AI Coach</h1>
-            <p className="text-sm text-muted-foreground">
-              Your personalized learning assistant
-            </p>
-          </div>
+          <Button variant="ghost" size="sm" className="gap-1">
+            <RefreshCw className="h-3 w-3" />
+            Clear Chat
+          </Button>
+        </div>
+      </div>
+
+      {/* Context Bar */}
+      <div className="border-b bg-background/50 px-6 py-2">
+        <div className="mx-auto flex max-w-4xl items-center gap-4 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1">
+            <BookOpen className="h-3 w-3" />
+            React (68%)
+          </span>
+          <span className="flex items-center gap-1">
+            <Sparkles className="h-3 w-3" />
+            ML Fundamentals (45%)
+          </span>
+          <span>•</span>
+          <span>Active learner since Jan 2024</span>
         </div>
       </div>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-6 py-4">
-        <div className="mx-auto max-w-3xl space-y-4">
+        <div className="mx-auto max-w-4xl space-y-6">
           {messages.map((message) => (
             <div
               key={message.id}
@@ -116,27 +152,26 @@ export default function AIAssistantPage() {
               }`}
             >
               {message.role === "assistant" && (
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary">
                   <Bot className="h-4 w-4 text-primary-foreground" />
                 </div>
               )}
-              <Card
-                className={`max-w-[80%] px-4 py-3 ${
-                  message.role === "user" ? "bg-primary text-primary-foreground" : ""
+              <div
+                className={`max-w-[85%] rounded-2xl px-4 py-3 ${
+                  message.role === "user"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-background border shadow-sm"
                 }`}
               >
-                <div className="whitespace-pre-wrap text-sm">
+                <div className="whitespace-pre-wrap text-sm leading-relaxed">
                   {message.content}
                 </div>
-              </Card>
+              </div>
               {message.role === "user" && (
                 <Avatar className="h-8 w-8 shrink-0">
                   <AvatarImage src={currentUser.avatar_url} />
-                  <AvatarFallback>
-                    {currentUser.full_name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
+                  <AvatarFallback className="text-xs">
+                    {userName.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
               )}
@@ -145,12 +180,12 @@ export default function AIAssistantPage() {
 
           {isTyping && (
             <div className="flex gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary">
                 <Bot className="h-4 w-4 text-primary-foreground" />
               </div>
-              <Card className="px-4 py-3">
+              <div className="rounded-2xl bg-background border px-4 py-3 shadow-sm">
                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-              </Card>
+              </div>
             </div>
           )}
 
@@ -158,27 +193,29 @@ export default function AIAssistantPage() {
         </div>
       </div>
 
-      {/* Suggested questions */}
-      {messages.length === 1 && (
-        <div className="border-t bg-card px-6 py-4">
-          <div className="mx-auto max-w-3xl">
-            <p className="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
-              <Sparkles className="h-4 w-4" />
-              Suggested questions
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {suggestedQuestions.map((question, index) => (
-                <Button
+      {/* Suggested Actions */}
+      {messages.length <= 2 && (
+        <div className="border-t bg-background/80 px-6 py-4 backdrop-blur">
+          <div className="mx-auto max-w-4xl">
+            <div className="mb-3 flex items-center gap-2 text-xs text-muted-foreground">
+              <Sparkles className="h-3 w-3" />
+              Suggested for you, {userName}
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {suggestedQuestions.map((item, index) => (
+                <button
                   key={index}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setInputValue(question);
-                    handleSend();
-                  }}
+                  onClick={() => handleQuickAction(item.text)}
+                  className="flex items-center gap-3 rounded-xl border bg-background p-3 text-left transition-all hover:border-primary hover:shadow-sm"
                 >
-                  {question}
-                </Button>
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                    <item.icon className="h-4 w-4 text-primary" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{item.text}</p>
+                    <p className="text-xs text-muted-foreground">{item.category}</p>
+                  </div>
+                </button>
               ))}
             </div>
           </div>
@@ -186,8 +223,8 @@ export default function AIAssistantPage() {
       )}
 
       {/* Input */}
-      <div className="border-t bg-card px-6 py-4">
-        <div className="mx-auto max-w-3xl">
+      <div className="border-t bg-background px-6 py-4">
+        <div className="mx-auto max-w-4xl">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -196,17 +233,19 @@ export default function AIAssistantPage() {
             className="flex gap-2"
           >
             <Input
-              placeholder="Ask anything about your courses..."
+              placeholder={`Ask anything about your courses, ${userName}...`}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              className="flex-1"
+              className="flex-1 rounded-xl"
               disabled={isTyping}
             />
-            <Button type="submit" disabled={isTyping || !inputValue.trim()}>
+            <Button type="submit" disabled={isTyping || !inputValue.trim()} size="default">
               <Send className="h-4 w-4" />
-              <span className="sr-only">Send message</span>
             </Button>
           </form>
+          <p className="mt-2 text-center text-xs text-muted-foreground">
+            Press Enter to send • AI responses are tailored to your learning progress
+          </p>
         </div>
       </div>
     </div>
