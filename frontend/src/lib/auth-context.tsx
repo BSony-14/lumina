@@ -1,16 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { User as SupabaseUser, createClient } from "@supabase/supabase-js";
-
-// Get environment variables with fallbacks
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
-
-// Create supabase client only if env vars are present
-const supabase = supabaseUrl && supabaseAnonKey
-  ? createClient(supabaseUrl, supabaseAnonKey)
-  : null;
+import { User as SupabaseUser, createClient, SupabaseClient } from "@supabase/supabase-js";
 
 export interface UserProfile {
   id: string;
@@ -56,16 +47,39 @@ const demoProfile: UserProfile = {
   created_at: new Date().toISOString(),
 };
 
+// Singleton Supabase client - only created on client side
+let supabaseClient: SupabaseClient | null = null;
+
+function getSupabaseClient(): SupabaseClient | null {
+  if (supabaseClient) return supabaseClient;
+
+  // Only create on client side
+  if (typeof window === "undefined") return null;
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return null;
+  }
+
+  supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+  return supabaseClient;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const isDemo = !supabase;
+  const [isDemo, setIsDemo] = useState(false);
 
   useEffect(() => {
+    const supabase = getSupabaseClient();
+
     // If no Supabase client, use demo mode
     if (!supabase) {
       setProfile(demoProfile);
+      setIsDemo(true);
       setLoading(false);
       return;
     }
@@ -74,9 +88,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfile(session.user);
+        fetchProfile(supabase, session.user);
       } else {
         setProfile(demoProfile);
+        setIsDemo(true);
         setLoading(false);
       }
     });
@@ -85,9 +100,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfile(session.user);
+        fetchProfile(supabase, session.user);
       } else {
         setProfile(demoProfile);
+        setIsDemo(true);
         setLoading(false);
       }
     });
@@ -95,9 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchProfile = async (user: SupabaseUser) => {
-    if (!supabase) return;
-
+  const fetchProfile = async (supabase: SupabaseClient, user: SupabaseUser) => {
     try {
       const { data, error } = await supabase
         .from("user_profiles")
@@ -107,18 +121,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) throw error;
       setProfile(data || demoProfile);
+      setIsDemo(!data);
     } catch (error) {
       console.error("Error fetching profile:", error);
       setProfile(demoProfile);
+      setIsDemo(true);
     } finally {
       setLoading(false);
     }
   };
 
   const signUp = async (email: string, password: string, fullName: string) => {
+    const supabase = getSupabaseClient();
+
     if (!supabase) {
       // Demo mode - simulate success
       setProfile({ ...demoProfile, email, full_name: fullName });
+      setIsDemo(true);
       return { error: null };
     }
 
@@ -135,9 +154,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
+    const supabase = getSupabaseClient();
+
     if (!supabase) {
       // Demo mode - simulate success
       setProfile(demoProfile);
+      setIsDemo(true);
       return { error: null };
     }
 
@@ -150,11 +172,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    const supabase = getSupabaseClient();
     if (supabase) {
       await supabase.auth.signOut();
     }
     setUser(null);
     setProfile(demoProfile);
+    setIsDemo(true);
   };
 
   return (
