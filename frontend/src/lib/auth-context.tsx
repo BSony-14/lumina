@@ -31,21 +31,8 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Default profile for demo mode
-const demoProfile: UserProfile = {
-  id: "demo-user",
-  email: "demo@lumina.dev",
-  full_name: "Demo Learner",
-  role: "student",
-  learning_goal: "Full-Stack Development",
-  cohort: "2024-cohort",
-  progress_percentage: 68,
-  courses_enrolled: 3,
-  courses_completed: 1,
-  learning_hours: 185,
-  streak_days: 5,
-  created_at: new Date().toISOString(),
-};
+// Removed hard‑coded demo profile – all user data now comes from Supabase.
+
 
 // Singleton Supabase client - only created on client side
 let supabaseClient: SupabaseClient | null = null;
@@ -76,10 +63,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const supabase = getSupabaseClient();
 
-    // If no Supabase client, use demo mode
+    // If Supabase client cannot be created, we remain in loading state.
     if (!supabase) {
-      setProfile(demoProfile);
-      setIsDemo(true);
       setLoading(false);
       return;
     }
@@ -90,8 +75,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (session?.user) {
         fetchProfile(supabase, session.user);
       } else {
-        setProfile(demoProfile);
-        setIsDemo(true);
         setLoading(false);
       }
     });
@@ -102,8 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (session?.user) {
         fetchProfile(supabase, session.user);
       } else {
-        setProfile(demoProfile);
-        setIsDemo(true);
+        setProfile(null);
         setLoading(false);
       }
     });
@@ -120,12 +102,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .single();
 
       if (error) throw error;
-      setProfile(data || demoProfile);
-      setIsDemo(!data);
+      setProfile(data);
     } catch (error) {
       console.error("Error fetching profile:", error);
-      setProfile(demoProfile);
-      setIsDemo(true);
+      setProfile(null);
     } finally {
       setLoading(false);
     }
@@ -135,9 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const supabase = getSupabaseClient();
 
     if (!supabase) {
-      // Demo mode - simulate success
-      setProfile({ ...demoProfile, email, full_name: fullName });
-      setIsDemo(true);
+      // In production we rely on Supabase – simulate success by doing nothing.
       return { error: null };
     }
 
@@ -157,9 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const supabase = getSupabaseClient();
 
     if (!supabase) {
-      // Demo mode - simulate success
-      setProfile(demoProfile);
-      setIsDemo(true);
+      // In production we rely on Supabase – simulate success by doing nothing.
       return { error: null };
     }
 
@@ -175,10 +151,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const supabase = getSupabaseClient();
     if (supabase) {
       await supabase.auth.signOut();
+      setUser(null);
+      setProfile(null);
+      setIsDemo(false);
     }
-    setUser(null);
-    setProfile(demoProfile);
-    setIsDemo(true);
   };
 
   return (
