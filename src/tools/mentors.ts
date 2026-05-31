@@ -1,8 +1,9 @@
 // ─── Mentor & Live Session Tools ─────────────────────────────────────────────
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { queryTable, insertRow, updateRow } from "../services/supabase.js";
+import { queryTable, insertRow, updateRow, getSupabaseClient } from "../services/supabase.js";
 import { makeTextContent, formatDate, formatPagination, toRecord } from "../services/formatting.js";
+import { sendBulkNotification } from "../services/notifications.js";
 import type { LiveSession, User } from "../types.js";
 
 const ResponseFormatSchema = z
@@ -144,6 +145,35 @@ Returns: Created session with Jitsi join link.`,
         status: "scheduled",
       });
       if (error || !session) return { isError: true, content: [{ type: "text", text: `Failed: ${error}` }] };
+
+      // ─── Notify enrolled students about the new session ────────────────────
+      try {
+        const supabase = getSupabaseClient();
+        const { data: enrollments } = await supabase
+          .from("enrollments")
+          .select("user_id")
+          .eq("course_id", params.course_id);
+
+        if (enrollments && enrollments.length > 0) {
+          const { data: course } = await supabase
+            .from("courses")
+            .select("title")
+            .eq("id", params.course_id)
+            .single();
+
+          const userIds = enrollments.map((e) => (e as { user_id: string }).user_id);
+          await sendBulkNotification(userIds, "session_scheduled", {
+            session_title: session.title,
+            course_name: course?.title ?? "Your Course",
+            scheduled_at: formatDate(session.scheduled_at),
+            duration: String(session.duration_minutes),
+            join_link: `https://meet.jit.si/${session.jitsi_room_id}`,
+          });
+        }
+      } catch {
+        // Notification failure should not break session creation
+        console.error("Failed to send session notifications for:", session.id);
+      }
 
       return {
         content: [{ type: "text", text: [

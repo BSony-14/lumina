@@ -133,3 +133,21 @@ export interface SupabaseError {
 }
 
 export type ResponseFormat = "markdown" | "json";
+
+// ─── Notification Types ──────────────────────────────────────────────────────
+
+export type NotificationEventType = "assignment_graded" | "session_scheduled";
+export type NotificationChannel = "email" | "whatsapp";
+
+export interface NotificationLogEntry {
+  id: string;
+  user_id: string;
+  channel: NotificationChannel;
+  event_type: NotificationEventType;
+  status: "pending" | "sent" | "failed";
+  metadata: Record<string, unknown>;
+  error_message?: string;
+  external_id?: string;
+  sent_at?: string;
+  created_at: string;
+}

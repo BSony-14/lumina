@@ -9,6 +9,7 @@
 //   SUPABASE_SERVICE_ROLE_KEY  (or NEXT_PUBLIC_SUPABASE_ANON_KEY)
 //   GOOGLE_GENERATIVE_AI_API_KEY
 
+import "dotenv/config";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
@@ -17,6 +18,7 @@ import { registerStudentTools } from "./tools/students.js";
 import { registerAITools } from "./tools/ai.js";
 import { registerAssignmentTools } from "./tools/assignments.js";
 import { registerMentorTools } from "./tools/mentors.js";
+import { registerNotificationTools } from "./tools/notifications.js";
 
 // ─── Server initialisation ────────────────────────────────────────────────────
 
@@ -32,6 +34,7 @@ registerStudentTools(server);
 registerAITools(server);
 registerAssignmentTools(server);
 registerMentorTools(server);
+registerNotificationTools(server);
 
 // ─── Transport ────────────────────────────────────────────────────────────────
 

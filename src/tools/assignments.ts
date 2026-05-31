@@ -1,8 +1,9 @@
 // ─── Assignment Tools ─────────────────────────────────────────────────────────
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { queryTable, insertRow, updateRow } from "../services/supabase.js";
+import { queryTable, insertRow, updateRow, getById } from "../services/supabase.js";
 import { makeTextContent, formatDate, toRecord } from "../services/formatting.js";
+import { sendNotification } from "../services/notifications.js";
 import type { Assignment, AssignmentSubmission } from "../types.js";
 
 const ResponseFormatSchema = z
@@ -179,6 +180,25 @@ Returns: Confirmation of grade recorded.`,
         score, feedback, graded_at: new Date().toISOString(),
       });
       if (error || !data) return { isError: true, content: [{ type: "text", text: `Failed to grade: ${error}` }] };
+
+      // ─── Notify student of graded assignment ─────────────────────────────
+      try {
+        const { data: assignment } = await getById<Assignment>("assignments", data.assignment_id);
+        const courseName = assignment
+          ? (await getById<{ title: string }>("courses", assignment.course_id)).data?.title ?? "Unknown Course"
+          : "Unknown Course";
+
+        await sendNotification(data.user_id, "assignment_graded", {
+          assignment_title: assignment?.title ?? "Assignment",
+          course_name: courseName,
+          score: String(score),
+          max_score: String(assignment?.max_score ?? score),
+          feedback,
+        });
+      } catch {
+        // Notification failure should not break the grading response
+        console.error("Failed to send grade notification for submission:", submission_id);
+      }
 
       return {
         content: [{ type: "text", text: `✅ Graded \`${submission_id}\`\n- **Score**: ${score}\n- **Graded**: ${formatDate(data.graded_at!)}\n\nFeedback saved.` }],
